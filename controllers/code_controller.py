@@ -3,8 +3,8 @@ import contextlib
 import base64
 import matplotlib.pyplot as plt
 import pandas as pd
-from utils.code_utils import validate_code, modify_read_csv_paths
-
+from utils.code_utils import validate_code
+from utils.update_path_utils import modify_read_csv_paths
 
 def execute_user_code(code,user_id):
     """Executes user-submitted Python code securely and returns output and plots."""
@@ -35,4 +35,4 @@ def execute_user_code(code,user_id):
     except Exception as e:
         return {'error': str(e)}, 500
 
-    return {'output': output.getvalue(), 'plot': plot_data, 'error': None}, 200
+    return {'output': output.getvalue(), 'plot': plot_data, 'error': error}, 200

@@ -2,8 +2,9 @@ import requests
 from flask import Blueprint, request, jsonify
 from controllers.prediction_controller import perform_prediction_with_timestamps
 from utils.data_cleaning import clean_data
+import config
 
-NODEJS_API_URL = 'http://cloud.xtranssolutions.com/node/api/channels/{channel_id}/entries/read'
+NODEJS_API_URL = config.backend_api
 
 prediction_routes = Blueprint('prediction_routes', __name__)
 

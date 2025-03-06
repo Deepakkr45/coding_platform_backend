@@ -30,9 +30,10 @@ def modify_read_csv_paths(code,user_id):
     tree = ReadCSVTransformer().visit(tree)
     return astunparse.unparse(tree)
 
-# ---------------------------- #
+
+
+
 #       Helper Functions       #
-# ---------------------------- #
 
 def is_string_assignment(node):
     """Check if an assignment is a string, e.g., csv_file = 'test.csv'."""
@@ -42,7 +43,7 @@ def update_string_path(node, user_upload_folder):
     """Update string assignments to point to the correct upload folder."""
     filename = node.value.s
     modified_path = os.path.join(user_upload_folder, filename)
-    print(f"🔄 Updating string path: {filename} → {modified_path}")  # Debugging output
+    print(f"Updating string path: {filename} → {modified_path}")  # Debugging output
     node.value = ast.Str(s=modified_path)
     return node
 
@@ -53,7 +54,7 @@ def is_os_path_join(node):
 def update_os_path_join(node, user_upload_folder):
     """Modify os.path.join() assignments to use the upload folder."""
     modified_path = os.path.join(user_upload_folder, node.value.args[-1].s)
-    print(f"🔄 Updating os.path.join path: {modified_path}")  # Debugging output
+    print(f"Updating os.path.join path: {modified_path}")  # Debugging output
     node.value = ast.Str(s=modified_path)
     return node
 
@@ -61,7 +62,7 @@ def is_read_csv_call(node):
     """Check if the function call is pd.read_csv()."""
     if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
         if node.func.value.id == 'pd' and node.func.attr == 'read_csv':
-            print("✅ Found pd.read_csv() call in AST")  # Debugging output
+            print("Found pd.read_csv() call in AST")  # Debugging output
             return True
     return False
 
@@ -84,7 +85,7 @@ def modify_csv_read_call(node, user_upload_folder):
         if isinstance(node.args[0], ast.Str):
             filename = node.args[0].s
             modified_path = os.path.join(user_upload_folder, filename)
-            print(f"🔄 Changing CSV path: {filename} → {modified_path}")  # Debugging output
+            print(f"Changing CSV path: {filename} → {modified_path}")  # Debugging output
             node.args[0] = ast.Str(s=modified_path)
         
         # Case 2: Variable Path
@@ -92,7 +93,7 @@ def modify_csv_read_call(node, user_upload_folder):
             var_name = node.args[0].id
             debug_code = (
                 f"import os; print('Checking for file:', {var_name}); "
-                f"if not os.path.exists({var_name}): print('❌ Error: File not found:', {var_name})"
+                f"if not os.path.exists({var_name}): print('Error: File not found:', {var_name})"
             )
             debug_node = ast.parse(debug_code).body[0]
             return [debug_node, node]

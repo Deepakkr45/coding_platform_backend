@@ -14,8 +14,8 @@ CORS(app)
 # init_db(app)
 
 # Register Blueprints (Routes)
-app.register_blueprint(code_routes, url_prefix='/api/code')
-app.register_blueprint(file_routes, url_prefix='/api/files')
+app.register_blueprint(code_routes, url_prefix='/code')
+app.register_blueprint(file_routes, url_prefix='/file')
 app.register_blueprint(analysis_routes, url_prefix='/api')
 app.register_blueprint(prediction_routes, url_prefix='/api')
 

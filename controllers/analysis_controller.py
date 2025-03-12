@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-from flask import jsonify
-from utils.data_cleaning import clean_data
 
 def perform_analysis(data, analysis_type):
     try:

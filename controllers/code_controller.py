@@ -36,3 +36,5 @@ def execute_user_code(code,user_id):
         return {'error': str(e)}, 500
 
     return {'output': output.getvalue(), 'plot': plot_data, 'error': error}, 200
+
+

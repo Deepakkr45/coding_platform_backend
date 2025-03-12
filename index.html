@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Machine Learning Coding Platform</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/python/python.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+    .editor-container {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Machine Learning Coding Platform</h1>
+  <div class="editor-container">
+    <textarea id="code-editor"></textarea>
+  </div>
+  <input type="file" id="import-file" accept=".py">
+  <button id="import-button">Import</button>
+  <button id="export-button">Export</button>
+
+  <script>
+    // Initialize CodeMirror editor
+    var editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+      lineNumbers: true,
+      mode: "python"
+    });
+
+    document.getElementById('export-button').addEventListener('click', async () => {
+      const code = editor.getValue();
+      
+      try {
+        const response = await fetch('http://127.0.0.1:5000/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: code })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(`Error: ${errorData.error || 'Failed to export file'}`);
+          return;
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'main.py';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (error) {
+        alert('Error exporting file: ' + error.message);
+        console.error('Export Error:', error);
+      }
+    });
+
+    document.getElementById('export-button').addEventListener('click', async () => {
+    const code = editor.getValue();
+    
+    try {
+        const response = await fetch('http://127.0.0.1:5000/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            alert(`Error: ${errorData.error || 'Failed to export file'}`);
+            return;
+        }
+
+        // Keep the editor content unchanged and allow file download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'main.py';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+    } catch (error) {
+        alert('Error exporting file: ' + error.message);
+        console.error('Export Error:', error);
+    }
+});
+
+  </script>
+</body>
+</html>

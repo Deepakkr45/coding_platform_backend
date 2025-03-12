@@ -1,12 +1,16 @@
 import requests
+import logging
 from flask import Blueprint, request, jsonify
 from controllers.analysis_controller import perform_analysis
 from utils.data_cleaning import clean_data
 import config
 
-NODEJS_API_URL = config.backend_api
+NODEJS_API_URL = config.read_api
 
 analysis_routes = Blueprint('analysis_routes', __name__)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 @analysis_routes.route('/analysis', methods=['POST'])
 def analysis():
@@ -16,18 +20,15 @@ def analysis():
         field = request_data.get('field')
         analysis_type = request_data.get('analysis_type')
         num_entries = request_data.get('num_entries')
-        token = request.headers.get('Authorization')
 
         if not all([channel_id, field, analysis_type]):
-            return jsonify({'error': 'channel_id, field, and analysis_type are required'}), 400
+            return jsonify({'status': 'error', 'message': 'channel_id, field, and analysis_type are required'}), 400
 
-        nodejs_response = requests.get(
-            NODEJS_API_URL.format(channel_id=channel_id),
-            headers={'Authorization': token}
-        )
+        nodejs_response = requests.get(NODEJS_API_URL.format(channel_id=channel_id))
 
         if nodejs_response.status_code != 200:
-            return jsonify({'error': 'Failed to fetch data from Node.js backend'}), 400
+            logging.error(f"Failed to fetch data from Node.js backend. Status: {nodejs_response.status_code}")
+            return jsonify({'status': 'error', 'message': 'Failed to fetch data from Node.js backend'}), 502
 
         nodejs_data = nodejs_response.json()
         data = clean_data(nodejs_data['entries'], field)
@@ -37,17 +38,23 @@ def analysis():
         else:
             num_entries = int(num_entries)
             if num_entries <= 0:
-                return jsonify({'error': 'Number of Entries must be more than 0'}), 400
+                return jsonify({'status': 'error', 'message': 'Number of entries must be more than 0'}), 400
 
         if len(data) < num_entries:
-            return jsonify({'error': 'Requested {} entries, but only {} available'.format(num_entries, len(data))}), 400
+            return jsonify({
+                'status': 'error',
+                'message': f'Requested {num_entries} entries, but only {len(data)} available'
+            }), 422  # 422 Unprocessable Entity
 
         data = data.tail(num_entries)
         result = perform_analysis(data, analysis_type)
 
-        return jsonify(result), 200
+        return jsonify({'status': 'success', 'data': result}), 200
 
     except ValueError as e:
-        return jsonify({'error': str(e)}), 400
+        logging.error(f"ValueError: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+
     except Exception as e:
-        return jsonify({'error': 'An unexpected error occurred: {}'.format(str(e))}), 400
+        logging.error(f"Unexpected error: {str(e)}", exc_info=True)
+        return jsonify({'status': 'error', 'message': 'An unexpected error occurred'}), 500  # Internal Server Error

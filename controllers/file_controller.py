@@ -16,19 +16,19 @@ def upload_user_file(file, user_id):
     """Handles file upload with validation and saves it."""
     validation_error = validate_upload(file, user_id)
     if validation_error:
-        return {"status": "error", "message": validation_error}, 400
+        return validation_error
 
     file_path = save_file(file, user_id, file.filename)
     
     if file_path == "exists":
-        return {"status": "error", "message": "File already exists"}, 409
+        return {"error": "File already exists"}, 409
     elif file_path == "limit_exceeded":
-        return {"status": "error", "message": "File limit exceeded. Delete old files."}, 413
+        return {"error": "File limit exceeded. Delete old files."}, 400
     elif isinstance(file_path, str):
         logging.info(f"File '{file.filename}' uploaded by User {user_id}")
-        return {"status": "success", "message": f"File '{file.filename}' uploaded successfully"}, 201
+        return {"message": f"File '{file.filename}' uploaded successfully"}, 201
     else:
-        return {"status": "error", "message": "An unknown error occurred while saving the file."}, 500
+        return {"error": "Unknown error occurred while saving file."}, 500
 
 def fetch_user_data(channel_id, user_id):
     """Fetch CSV from Node.js backend and save it."""

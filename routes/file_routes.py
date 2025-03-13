@@ -9,16 +9,11 @@ logging.basicConfig(level=logging.INFO)
 
 @file_routes.route('/upload', methods=['POST'])
 def upload_file():
-    """Handles file upload request."""
     if 'file' not in request.files:
-        return jsonify({"status": "error", "message": "Missing file"}), 400
-
+        return jsonify({"error": "Missing file"}), 400
     token = request.headers.get('Authorization')
-    if not token:
-        logging.warning("Upload attempt without token.")
-        return jsonify({"status": "error", "message": "Authorization token is required"}), 401
-
     file = request.files['file']
+    # user_id = request.form['user_id']
     response, status = upload_user_file(file, token)
     return jsonify(response), status
 
@@ -41,28 +36,20 @@ def fetch_csv():
 
 @file_routes.route('/list', methods=['GET'])
 def list_files():
-    """Lists all uploaded files for the authenticated user."""
+    # user_id = request.args.get('user_id')
     token = request.headers.get('Authorization')
     if not token:
-        logging.warning("List files attempt without token.")
-        return jsonify({"status": "error", "message": "Authorization token is required"}), 401
-
+        return jsonify({"error": "token is required"}), 400
     response, status = list_user_files(token)
     return jsonify(response), status
 
 @file_routes.route('/delete', methods=['DELETE'])
 def delete_file():
-    """Deletes a specific file for the user."""
+    data = request.json
     token = request.headers.get('Authorization')
-    if not token:
-        logging.warning("Delete attempt without token.")
-        return jsonify({"status": "error", "message": "Authorization token is required"}), 401
-
-    data = request.get_json()
+    # user_id = data.get('user_id')
     filename = data.get('filename')
-
-    if not filename:
-        return jsonify({"status": "error", "message": "Filename is required"}), 400
-
+    if not token or not filename:
+        return jsonify({"error": "User ID and filename are required"}), 400
     response, status = delete_user_file(token, filename)
     return jsonify(response), status

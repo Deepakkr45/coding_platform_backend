@@ -1,5 +1,5 @@
 import logging
-from utils.file_utils import save_file, list_files, delete_file, validate_upload, save_csv_to_disk, find_channel_name_by_id
+from utils.file_utils import save_file, list_files, delete_file, validate_upload, save_csv_to_disk, find_channel_name_by_id, fetch_user_id
 import config
 import requests
 import json
@@ -30,7 +30,7 @@ def upload_user_file(file, user_id):
     else:
         return {"error": "Unknown error occurred while saving file."}, 500
 
-def fetch_user_data(channel_id, user_id):
+def fetch_user_data(channel_id, token):
     """Fetch CSV from Node.js backend and save it."""
     if not channel_id:
         return {"status": "error", "message": "Channel ID is required"}, 400
@@ -41,7 +41,7 @@ def fetch_user_data(channel_id, user_id):
 
         channels_json = requests.get(
             FETCH_CHANNELS_URL,
-            headers={'Authorization': user_id}
+            headers={'Authorization': token}
         )
         file_name = find_channel_name_by_id(channel_id, channels_json.json())
 
@@ -55,12 +55,19 @@ def fetch_user_data(channel_id, user_id):
         if file_name is None:
             return {"status": "error", "message": "Channel does not exist"}, 404
 
-        file_path = save_csv_to_disk(user_id, nodejs_response.content, file_name)
-        if not file_path:
-            return {"status": "error", "message": "Failed to save CSV file"}, 500
+        user_id = fetch_user_id(token)
 
-        logging.info(f"CSV file for channel {channel_id} fetched and saved successfully.")
-        return {"status": "success", "message": f"CSV file for channel {channel_id} saved successfully"}, 200
+        if user_id:
+            file_path = save_csv_to_disk(user_id, nodejs_response.content, file_name)
+            if not file_path:
+                return {"status": "error", "message": "Failed to save CSV file"}, 500
+
+            logging.info(f"CSV file for channel {channel_id} fetched and saved successfully.")
+            return {"status": "success", "message": f"CSV file for channel {channel_id} saved successfully"}, 200
+        else:
+            return {"error": "No user ID exists, please login again."}, 401
+        
+
 
     except requests.exceptions.RequestException as e:
         logging.error(f"Failed to fetch CSV file from Database: {e}")

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 import logging
 from controllers.file_controller import upload_user_file, list_user_files, delete_user_file, fetch_user_data
-
+from utils.file_utils import fetch_user_id
 file_routes = Blueprint('files', __name__)
 
 # Set up logging
@@ -9,13 +9,26 @@ logging.basicConfig(level=logging.INFO)
 
 @file_routes.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "Missing file"}), 400
+    # Get the authorization token from the request headers
     token = request.headers.get('Authorization')
-    file = request.files['file']
-    # user_id = request.form['user_id']
-    response, status = upload_user_file(file, token)
-    return jsonify(response), status
+
+    # Get the file from the request 
+    file = request.files.get('file')
+
+    if not file:
+        return jsonify({"error": "No file provided"}), 400
+
+    # Call the function to fetch user data
+    user_id = fetch_user_id(token)
+
+    if user_id:
+        # If user_id exists, proceed with uploading the file
+        response, status = upload_user_file(file, user_id)
+        return jsonify(response), status
+    else:
+        # If no user_id exists, return an error message
+        return jsonify({"error": "No user ID exists, please login again."}), 401
+
 
 @file_routes.route('/fetch', methods=['POST'])
 def fetch_csv():
@@ -31,6 +44,7 @@ def fetch_csv():
     if not channel_id:
         return jsonify({"status": "error", "message": "Channel ID is required"}), 400
 
+
     response, status = fetch_user_data(channel_id, token)
     return jsonify(response), status
 
@@ -40,7 +54,8 @@ def list_files():
     token = request.headers.get('Authorization')
     if not token:
         return jsonify({"error": "token is required"}), 400
-    response, status = list_user_files(token)
+    user_id = fetch_user_id(token)
+    response, status = list_user_files(user_id)
     return jsonify(response), status
 
 @file_routes.route('/delete', methods=['DELETE'])
@@ -51,6 +66,7 @@ def delete_file():
     filename = data.get('filename')
     if not token or not filename:
         return jsonify({"error": "User ID and filename are required"}), 400
-    response, status = delete_user_file(token, filename)
+    user_id = fetch_user_id(token)
+    response, status = delete_user_file(user_id, filename)
     return jsonify(response), status
 

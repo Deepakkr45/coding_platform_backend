@@ -1,5 +1,7 @@
 import os
 import logging
+import config
+import requests
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
@@ -8,6 +10,7 @@ ALLOWED_EXTENSIONS = {'csv', 'json'}
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
+
 
 def allowed_file(filename):
     """Check if the uploaded file has an allowed extension."""
@@ -25,6 +28,30 @@ def validate_upload(file, user_id):
     if not allowed_file(file.filename):
         return {"error": "Only CSV & JSON files allowed"}, 400
     return None
+
+
+def fetch_user_id(token):
+    headers = {"Authorization": token}
+    try:
+        response = requests.get(config.user_api, headers=headers)
+        if response.status_code == 200:
+            response_data = response.json()
+            user_id = response_data.get("user")
+
+            if user_id:
+                return user_id
+            else:
+                print("User ID not found in the response")
+                return None
+        else:
+            print(f"Failed to fetch data. Status code: {response.status_code}")
+            return None
+
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        return None
+    
+
 
 def find_channel_name_by_id(channel_id, data):
     """Find channel name from channel ID."""

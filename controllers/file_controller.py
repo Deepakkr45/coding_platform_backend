@@ -69,12 +69,11 @@ def fetch_user_data(channel_id, user_id):
 def list_user_files(user_id):
     """Lists all uploaded files for a user."""
     files = list_files(user_id)
-    return {"status": "success", "files": files}, 200
+    return {"files": files}, 200
 
 def delete_user_file(user_id, filename):
     """Deletes a specific file for a user."""
     if not delete_file(user_id, filename):
-        return {"status": "error", "message": "File not found"}, 404
-
+        return {"error": "File not found"}, 404
     logging.info(f"File '{filename}' deleted by User {user_id}")
-    return {"status": "success", "message": f"File '{filename}' deleted successfully"}, 200
+    return {"message": f"File '{filename}' deleted successfully"}, 200

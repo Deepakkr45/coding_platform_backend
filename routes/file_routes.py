@@ -53,3 +53,4 @@ def delete_file():
         return jsonify({"error": "User ID and filename are required"}), 400
     response, status = delete_user_file(token, filename)
     return jsonify(response), status
+

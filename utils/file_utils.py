@@ -16,11 +16,14 @@ def allowed_file(filename):
 def validate_upload(file, user_id):
     """Validates user ID and file before uploading."""
     if not user_id or not isinstance(user_id, str):
-        return {"status": "error", "message": "Valid User ID is required"}, 400
+        return {"error": "Valid User ID is required"}, 400
     if file.filename == '':
-        return {"status": "error", "message": "No file selected"}, 400
+        return {"error": "No file selected"}, 400
+   
+    if ' ' in file.filename:
+        return {"error": "File name should not contain spaces"}, 400
     if not allowed_file(file.filename):
-        return {"status": "error", "message": "Only CSV & JSON files allowed"}, 415  # Unsupported Media Type
+        return {"error": "Only CSV & JSON files allowed"}, 400
     return None
 
 def find_channel_name_by_id(channel_id, data):
@@ -49,33 +52,30 @@ def save_csv_to_disk(token, content, file_name):
 def save_file(file, user_id, filename):
     """Save a file to the user's upload folder."""
     user_folder = os.path.join(UPLOAD_DIR, user_id)
-    os.makedirs(user_folder, exist_ok=True)
-
+    os.makedirs(user_folder, exist_ok=True)  # Ensure directory exists
     file_path = os.path.join(user_folder, filename)
-
+    
     if os.path.exists(file_path):
-        return {"status": "error", "message": "File already exists"}, 409  # Conflict
-
+        return "exists"
+    
     if len(os.listdir(user_folder)) >= 10:
-        return {"status": "error", "message": "File limit exceeded. Delete old files."}, 403  # Forbidden
-
+        return "limit_exceeded"
+    
     file.save(file_path)
-    return {"status": "success", "message": "File uploaded successfully", "file_path": file_path}, 201  # Created
+    return file_path
 
 def list_files(user_id):
     """List all files for a user."""
     user_folder = os.path.join(UPLOAD_DIR, user_id)
     if not os.path.exists(user_folder):
-        return {"status": "success", "files": []}, 200  # Return empty list instead of error
-    return {"status": "success", "files": os.listdir(user_folder)}, 200
+        return []
+    return os.listdir(user_folder)
 
 def delete_file(user_id, filename):
     """Delete a specific file for a user."""
     user_folder = os.path.join(UPLOAD_DIR, user_id)
     file_path = os.path.join(user_folder, filename)
-
-    if not os.path.exists(file_path):
-        return {"status": "error", "message": "File not found"}, 404  # Not Found
-
-    os.remove(file_path)
-    return {"status": "success", "message": f"File '{filename}' deleted successfully"}, 200  # OK
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return True
+    return False

@@ -12,7 +12,7 @@ def run_code():
     token = request.headers.get('Authorization')
     # user_id = requests.get(config.user_api,auth=token)
     
-    # print(token)
+    # print(code)
     # user_id = data.get('user_id', '')
     response, status = execute_user_code(code,token)
     return jsonify(response), status

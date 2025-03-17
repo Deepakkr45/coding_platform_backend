@@ -1,8 +1,5 @@
 import re
 import os
-import ast
-import astor 
-import astunparse
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")

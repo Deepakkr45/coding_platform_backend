@@ -9,9 +9,7 @@ numpy==1.26.4
 keras==3.8.0
 matplotlib==3.8.2
 seaborn==0.13.2
-astunparse==1.6.3
 requests==2.31.0
 statsmodels==0.14.0
 werkzeug==3.0.1
 gunicorn
-astor

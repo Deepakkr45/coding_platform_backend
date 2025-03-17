@@ -27,7 +27,7 @@ def upload_file():
         return jsonify(response), status
     else:
         # If no user_id exists, return an error message
-        return jsonify({"error": "No user ID exists, please login again."}), 401
+        return jsonify({"error": "Session ended, Please login again"}), 401
 
 
 @file_routes.route('/fetch', methods=['POST'])

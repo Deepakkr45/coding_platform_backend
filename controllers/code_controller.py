@@ -10,8 +10,9 @@ from utils.file_utils import fetch_user_id
 def execute_user_code(code,token):
     """Executes user-submitted Python code securely and returns output and plots."""
     user_id = fetch_user_id(token)
+    print(user_id)
     if not user_id:
-        return {'output': '', 'plot': None, 'error': 'User ID is required'}, 400
+        return {'output': '', 'plot': None, 'error': 'Session ended, Please login again'}, 400
     
     is_valid, message = validate_code(code)
     if not is_valid:

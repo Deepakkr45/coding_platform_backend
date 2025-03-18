@@ -106,3 +106,25 @@ def delete_file(user_id, filename):
         os.remove(file_path)
         return True
     return False
+
+def rename_file(user_id, old_filename, new_filename):
+    """Renames a specific file for a user."""
+    user_folder = os.path.join(UPLOAD_DIR, user_id)
+    old_filepath = os.path.join(user_folder, old_filename)
+    new_filepath = os.path.join(user_folder, new_filename)
+
+    # Check if the current file exists
+    if not os.path.exists(old_filepath):
+        return False
+
+    # Check if the new file already exists
+    if os.path.exists(new_filepath):
+        return False
+
+    # Rename the file
+    try:
+        os.rename(old_filepath, new_filepath)
+        return True
+    except Exception as e:
+        logging.error(f"Error renaming file: {str(e)}")
+        return False

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 import logging
-from controllers.file_controller import upload_user_file, list_user_files, delete_user_file, fetch_user_data
+from controllers.file_controller import upload_user_file, list_user_files, delete_user_file, fetch_user_data, rename_user_file
 from utils.file_utils import fetch_user_id
 file_routes = Blueprint('files', __name__)
 
@@ -8,7 +8,7 @@ file_routes = Blueprint('files', __name__)
 logging.basicConfig(level=logging.INFO)
 
 @file_routes.route('/upload', methods=['POST'])
-def upload_file():
+def upload_file_route():
     # Get the authorization token from the request headers
     token = request.headers.get('Authorization')
 
@@ -31,12 +31,12 @@ def upload_file():
 
 
 @file_routes.route('/fetch', methods=['POST'])
-def fetch_csv():
+def fetch_csv_route():
     """Fetches CSV file from backend based on channel_id."""
     token = request.headers.get('Authorization')
     if not token:
         logging.warning("Fetch attempt without token.")
-        return jsonify({"status": "error", "message": "Authorization token is required"}), 401
+        return jsonify({"status": "error", "message": "token is required"}), 401
 
     request_data = request.get_json()
     channel_id = request_data.get('channel_id')
@@ -49,7 +49,7 @@ def fetch_csv():
     return jsonify(response), status
 
 @file_routes.route('/list', methods=['GET'])
-def list_files():
+def list_files_route():
     # user_id = request.args.get('user_id')
     token = request.headers.get('Authorization')
     if not token:
@@ -59,7 +59,7 @@ def list_files():
     return jsonify(response), status
 
 @file_routes.route('/delete', methods=['DELETE'])
-def delete_file():
+def delete_file_route():
     data = request.json
     token = request.headers.get('Authorization')
     # user_id = data.get('user_id')
@@ -70,3 +70,20 @@ def delete_file():
     response, status = delete_user_file(user_id, filename)
     return jsonify(response), status
 
+@file_routes.route('/rename', methods=['POST'])
+def rename_file_route():
+    data = request.json
+    token = request.headers.get('Authorization')
+
+    if not data or 'old_filename' not in data or 'new_filename' not in data:
+        return jsonify({"error": "Missing 'old_filename' or 'new_filename' in request body"}), 400
+
+    user_id = fetch_user_id(token)
+    if not user_id:
+        return jsonify({"error": "Invalid or missing authorization token"}), 401
+
+    old_filename = data.get('old_filename')
+    new_filename = data.get('new_filename')
+
+    response, status = rename_user_file(user_id, old_filename, new_filename)
+    return jsonify(response), status

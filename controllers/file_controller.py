@@ -1,5 +1,5 @@
 import logging
-from utils.file_utils import save_file, list_files, delete_file, validate_upload, save_csv_to_disk, find_channel_name_by_id, fetch_user_id
+from utils.file_utils import save_file, list_files, delete_file, validate_upload, save_csv_to_disk, find_channel_name_by_id, fetch_user_id, rename_file
 import config
 import requests
 import json
@@ -84,3 +84,11 @@ def delete_user_file(user_id, filename):
         return {"error": "File not found"}, 404
     logging.info(f"File '{filename}' deleted by User {user_id}")
     return {"message": f"File '{filename}' deleted successfully"}, 200
+
+# Function to handle renaming logic
+def rename_user_file(user_id, old_filename, new_filename):
+    """Renames a specific file for a user."""
+    if not rename_file(user_id, old_filename, new_filename):
+        return {"error": "File not found or new filename already exists"}, 404
+    logging.info(f"File '{old_filename}' renamed to '{new_filename}' by User {user_id}")
+    return {"message": f"File '{old_filename}' renamed to '{new_filename}' successfully"}, 200

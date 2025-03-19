@@ -6,7 +6,7 @@ from routes.file_routes import file_routes
 # from database import init_db
 from routes.analysis_routes import analysis_routes
 from routes.prediction_routes import prediction_routes
-
+from routes.getval_routes import getval_routes
 app = Flask(__name__)
 CORS(app)
 
@@ -18,7 +18,7 @@ app.register_blueprint(code_routes, url_prefix='/code')
 app.register_blueprint(file_routes, url_prefix='/file')
 app.register_blueprint(analysis_routes, url_prefix='/api')
 app.register_blueprint(prediction_routes, url_prefix='/api')
-
+app.register_blueprint(getval_routes, url_prefix='/api')
 
 @app.route('/')
 def home():

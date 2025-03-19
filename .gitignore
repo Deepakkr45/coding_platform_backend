@@ -50,3 +50,6 @@ docker-compose.yml
 
 # Ignore Jupyter notebooks checkpoint files
 .ipynb_checkpoints/
+
+temp.py
+temp2.py

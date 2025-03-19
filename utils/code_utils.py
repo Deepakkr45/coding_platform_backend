@@ -6,6 +6,8 @@ UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 
 RESTRICTED_KEYWORDS = ['os', 'subprocess', 'shutil', 'sys', 'eval', 'exec', 'open', '__import__']
 
+ALLOWED_EXTENSIONS = {"py"}
+
 def validate_code(code):
     """Check for restricted keywords or modules."""
     for keyword in RESTRICTED_KEYWORDS:
@@ -31,3 +33,5 @@ def validate_code(code):
 #     tree = ReadCSVTransformer().visit(tree)
 #     return astor.to_source(tree)
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

@@ -4,12 +4,14 @@ from utils.data_cleaning import clean_data2
 from config import read_api
 
 def get_feild_data(channel_id, fields):
+    # url =
     try:
         nodejs_response = requests.get(read_api.format(channel_id=channel_id))
+        nodejs_response.raise_for_status()
         nodejs_data = nodejs_response.json()
 
         if 'entries' not in nodejs_data:
-            return jsonify({"error": "No entries found for the given channel ID"}), 404
+            return {"error": "No entries found for the given channel ID"}, 404
 
         result_data = {}
         missing_fields = []
@@ -28,7 +30,9 @@ def get_feild_data(channel_id, fields):
         if missing_fields:
             response["message"] = {"no_data": f"No data found for these fields: {', '.join(missing_fields)}"}
 
-        return jsonify(response)
+        return response, 200
 
+    except requests.exceptions.RequestException as e:
+        return {"error": "Failed to fetch data from the API"}, 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return {"error": str(e)}, 500

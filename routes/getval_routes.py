@@ -11,11 +11,11 @@ logging.basicConfig(level=logging.INFO)
 @getval_routes.route('/read_data', methods=['GET'])
 def get_data():
     channel_id = request.args.get('channel_id')
-    fields = request.args.getlist('field')
+    fields = request.args.getlist('fields')
 
     if not channel_id or not fields:
         return jsonify({"error": "channel_id and at least one field are required!"}), 400
     
-    response, status = get_feild_data(channel_id,fields)
+    response, status = get_feild_data(channel_id, fields)
 
     return jsonify(response), status

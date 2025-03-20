@@ -69,7 +69,7 @@ def execute_user_code(code, token):
     plot_data = None
 
     # Convert code to a list of lines to track line numbers
-    code_lines = modified_code.strip().split("\n")
+    # code_lines = modified_code.strip().split("\n")
     
     try:
         with contextlib.redirect_stdout(output):

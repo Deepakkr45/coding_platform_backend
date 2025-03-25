@@ -53,3 +53,4 @@ docker-compose.yml
 
 temp.py
 temp2.py
+raspberry_read.py

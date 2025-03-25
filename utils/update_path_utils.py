@@ -1,65 +1,3 @@
-# import os
-# import re
-
-# BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-# UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
-
-
-# def modify_read_paths(code, user_id):
-#     """Modify only file paths for CSV and JSON files without affecting other parts of the code."""
-
-#     user_upload_folder = os.path.join(UPLOAD_DIR, user_id)
-#     os.makedirs(user_upload_folder, exist_ok=True)  # Ensure user directory exists
-
-#     # Regex to match pd.read_csv and pd.read_json with direct paths (single or double quotes)
-#     file_read_patterns = [
-#         (r'(pd\.read_csv|pd\.read_json)\(\s*["\'](.*?)["\']', 2),
-#     ]
-
-#     def replace_path(match):
-#         """Replace hardcoded file paths inside pd.read_csv and pd.read_json."""
-#         func_call, filename = match.groups()
-#         if filename.endswith((".csv", ".json")):  # Check valid file types
-#             new_path = os.path.join(user_upload_folder, filename)
-#             return f'{func_call}("{new_path}"'  # Use double quotes for consistency
-#         return match.group(0)  # Return unchanged if not a valid file
-
-#     # Modify direct file paths
-#     for pattern, group_idx in file_read_patterns:
-#         code = re.sub(pattern, replace_path, code)
-
-#     # Regex to detect variable assignments with file names
-#     variable_assign_pattern = r'(\w+)\s*=\s*["\'](.*?)["\']'
-
-#     # Dictionary to store modified variable paths
-#     modified_vars = {}
-
-#     def replace_variable_assignment(match):
-#         """Replace variable assignments with modified paths if CSV or JSON."""
-#         var_name, filename = match.groups()
-#         if filename.endswith((".csv", ".json")):  # Only modify CSV/JSON paths
-#             new_path = os.path.join(user_upload_folder, filename)
-#             modified_vars[var_name] = new_path
-#             return f'{var_name} = "{new_path}"'
-#         return match.group(0)  # Return unchanged for other file types
-
-#     # Update variable assignments containing file paths
-#     code = re.sub(variable_assign_pattern, replace_variable_assignment, code)
-
-#     # Regex to find variable-based file paths in pd.read_csv and pd.read_json
-#     variable_usage_pattern = r'(pd\.read_csv|pd\.read_json)\(\s*(\w+)\s*\)'
-
-#     def replace_variable_usage(match):
-#         """Modify variable-based file paths used in read_csv and read_json."""
-#         func_call, var_name = match.groups()
-#         if var_name in modified_vars:
-#             return f'{func_call}("{modified_vars[var_name]}")'
-#         return match.group(0)  # Return unchanged if variable not modified
-
-#     # Modify file read operations that use variables
-#     code = re.sub(variable_usage_pattern, replace_variable_usage, code)
-
-#     return code
 import os
 import re
 
@@ -96,9 +34,17 @@ def modify_read_paths(code, user_id):
         (r'(pa\.csv\.read_csv|pa\.json\.read_json)\(\s*["\'](.*?)["\']', 2),
     ]
 
+        # Pattern to detect URL-based file paths
+    url_pattern = r'https?://'
+
     def replace_path(match):
         """Replace hardcoded file paths inside function calls."""
         func_call, filename = match.groups()
+
+        # Skip modification if the path is a URL
+        if re.search(url_pattern, filename):
+            return match.group(0)
+            
         new_path = os.path.join(user_upload_folder, filename)
         # Handle open() separately if used inside csv or json
         if "open(" in match.group(0):

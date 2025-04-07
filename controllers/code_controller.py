@@ -5,6 +5,8 @@ import traceback
 import re
 import matplotlib.pyplot as plt
 import pandas as pd
+
+
 from utils.code_utils import validate_code
 from utils.update_path_utils import modify_read_paths
 from utils.file_utils import fetch_user_id
@@ -25,17 +27,41 @@ def execute_user_code(code, token):
     output = io.StringIO()
     plot_data_list = []
 
+
+    
     try:
         with contextlib.redirect_stdout(output):
-            exec(modified_code, {'pd': pd, 'plt': plt, '__name__': '__main__'})
+            # Inject globals including animation wrappers
+            exec_globals = {
+                'pd': pd,
+                'plt': plt,
+                '__name__': '__main__'
+            }
+            exec(modified_code, exec_globals)
 
-            # Handle multiple Matplotlib plots
+            # ✅ Save all static plots with full visuals
             for fig_num in plt.get_fignums():
+                fig = plt.figure(fig_num)
                 buf = io.BytesIO()
-                plt.figure(fig_num)
-                plt.savefig(buf, format='png')
+
+                # Draw all visuals before saving
+                for ax in fig.axes:
+                    # Re-draw legend if present
+                    legend = ax.get_legend()
+                    if legend:
+                        legend.set_visible(True)
+
+                # Automatically adjust layout to include all elements
+                fig.tight_layout()
+                fig.canvas.draw()  # Force rendering
+
+                fig.savefig(buf, format='png', bbox_inches='tight')
                 buf.seek(0)
-                plot_data_list.append(base64.b64encode(buf.read()).decode('utf-8'))
+
+                plot_data_list.append({
+                    'image': base64.b64encode(buf.read()).decode('utf-8')
+                })
+
                 plt.close(fig_num)
 
     except Exception as e:

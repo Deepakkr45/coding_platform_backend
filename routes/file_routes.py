@@ -34,12 +34,16 @@ def upload_file_route():
 def fetch_csv_route():
     """Fetches CSV file from backend based on channel_id."""
     token = request.headers.get('Authorization')
+    token = 'Bearer ' + token
     if not token:
         logging.warning("Fetch attempt without token.")
         return jsonify({"status": "error", "message": "token is required"}), 401
 
     request_data = request.get_json()
+    # print("this is req data",request_data)
     channel_id = request_data.get('channel_id')
+    # print("this is channel data",channel_id)
+
 
     if not channel_id:
         return jsonify({"status": "error", "message": "Channel ID is required"}), 400

@@ -43,6 +43,7 @@ def fetch_user_data(channel_id, token):
             FETCH_CHANNELS_URL,
             headers={'Authorization': token}
         )
+        # print("this is channel json", channels_json.json())
         file_name = find_channel_name_by_id(channel_id, channels_json.json())
 
         logging.info(f"Fetching data for channel {channel_id} - Status: {nodejs_response.status_code}")
@@ -53,6 +54,7 @@ def fetch_user_data(channel_id, token):
         if not nodejs_response.text.strip():  # Check if the response is empty
             return {"status": "error", "message": "Empty response received"}, 204
         if file_name is None:
+            print(file_name)
             return {"status": "error", "message": "Channel does not exist"}, 404
 
         user_id = fetch_user_id(token)

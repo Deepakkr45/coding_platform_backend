@@ -21,14 +21,14 @@ def upload_user_file(file, user_id):
     file_path = save_file(file, user_id, file.filename)
     
     if file_path == "exists":
-        return {"error": "File already exists"}, 409
+        return {"status":"error","message": "File already exists"}, 409
     elif file_path == "limit_exceeded":
-        return {"error": "File limit exceeded. Delete old files."}, 400
+        return {"status":"error","message": "File limit exceeded. Delete old files."}, 400
     elif isinstance(file_path, str):
         logging.info(f"File '{file.filename}' uploaded by User {user_id}")
-        return {"message": f"File '{file.filename}' uploaded successfully"}, 201
+        return {"status":"success","message": f"File '{file.filename}' uploaded successfully"}, 201
     else:
-        return {"error": "Unknown error occurred while saving file."}, 500
+        return {"status":"error","message": "Error occurred while saving file. Try Again"}, 500
 
 def fetch_user_data(channel_id, token):
     """Fetch CSV from Node.js backend and save it."""
@@ -61,13 +61,17 @@ def fetch_user_data(channel_id, token):
 
         if user_id:
             file_path = save_csv_to_disk(user_id, nodejs_response.content, file_name)
+            if file_path == "exists":
+                return {"status":"error","message": "File already exists"}, 409
+            elif file_path == "limit_exceeded":
+                return {"status":"error","message": "File limit exceeded. Delete old files."}, 400
             if not file_path:
                 return {"status": "error", "message": "Failed to save CSV file"}, 500
 
             logging.info(f"CSV file for channel {channel_id} fetched and saved successfully.")
             return {"status": "success", "message": f"CSV file for channel {channel_id} saved successfully"}, 200
         else:
-            return {"error": "No user ID exists, please login again."}, 401
+            return {"status":"error","message": "No user ID exists, please login again."}, 401
         
 
 
@@ -83,7 +87,7 @@ def list_user_files(user_id):
 def delete_user_file(user_id, filename):
     """Deletes a specific file for a user."""
     if not delete_file(user_id, filename):
-        return {"error": "File not found"}, 404
+        return {"status": "error", "message": "File not found"}, 404
     logging.info(f"File '{filename}' deleted by User {user_id}")
     return {"message": f"File '{filename}' deleted successfully"}, 200
 
@@ -91,6 +95,6 @@ def delete_user_file(user_id, filename):
 def rename_user_file(user_id, old_filename, new_filename):
     """Renames a specific file for a user."""
     if not rename_file(user_id, old_filename, new_filename):
-        return {"error": "File not found or new filename already exists"}, 404
+        return {"status": "error", "message": "File not found or new filename already exists"}, 404
     logging.info(f"File '{old_filename}' renamed to '{new_filename}' by User {user_id}")
     return {"message": f"File '{old_filename}' renamed to '{new_filename}' successfully"}, 200

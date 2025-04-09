@@ -17,46 +17,46 @@ def export_code():
     try:
         data = request.get_json()
         if not data:
-            return jsonify({"error": "Request body must be JSON"}), 400
+            return jsonify({"status": "error", "message": "Request body must be JSON"}), 400
         if 'code' not in data:
-            return jsonify({"error": "Missing 'code' field in request body"}), 400
+            return jsonify({"status": "error", "message": "Missing 'code' field in request body"}), 400
 
         code = data['code']
         if not isinstance(code, str) or not code.strip():
-            return jsonify({"error": "'code' must be a non-empty string"}), 400
+            return jsonify({"status": "error", "message": "'code' must be a non-empty string"}), 400
 
         file_path = "main.py"
         try:
             with open(file_path, "w") as f:
                 f.write(code)
         except IOError as e:
-            return jsonify({"error": f"Failed to write file: {str(e)}"}), 500
+            return jsonify({"status": "error", "message": f"Failed to write file: {str(e)}"}), 500
 
         return send_file(file_path, as_attachment=True, download_name="main.py")
 
     except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+        return jsonify({"status": "error", "message": f"An unexpected error occurred: {str(e)}"}), 500
 
 @code_routes.route('/import', methods=['POST'])
 def import_code():
     try:
         if 'file' not in request.files:
-            return jsonify({"error": "No file provided in the request"}), 400
+            return jsonify({"status": "error", "message": "No file provided in the request"}), 400
 
         file = request.files['file']
         if file.filename == '':
-            return jsonify({"error": "No file selected"}), 400
+            return jsonify({"status": "error", "message": "No file selected"}), 400
         if not allowed_file(file.filename):
-            return jsonify({"error": "Invalid file type. Only .py files are allowed"}), 415
+            return jsonify({"status": "error", "message": "Invalid file type. Only .py files are allowed"}), 415
 
         try:
             code = file.read().decode("utf-8")
         except UnicodeDecodeError:
-            return jsonify({"error": "File could not be decoded as UTF-8"}), 415
+            return jsonify({"status": "error", "message": "File could not be decoded as UTF-8"}), 415
         except Exception as e:
-            return jsonify({"error": f"Failed to read file: {str(e)}"}), 500
+            return jsonify({"status": "error", "message": f"Failed to read file: {str(e)}"}), 500
 
-        return jsonify({"code": code})
+        return jsonify({"status":"success","code": code}),200
 
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500

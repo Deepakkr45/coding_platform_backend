@@ -39,7 +39,7 @@ def execute_user_code(code, token):
             }
             exec(modified_code, exec_globals)
 
-            # ✅ Save all static plots with full visuals
+            # Save all static plots with full visuals
             for fig_num in plt.get_fignums():
                 fig = plt.figure(fig_num)
                 buf = io.BytesIO()

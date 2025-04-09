@@ -16,7 +16,7 @@ def upload_file_route():
     file = request.files.get('file')
 
     if not file:
-        return jsonify({"error": "No file provided"}), 400
+        return jsonify({"status": "error", "message":"No file provided"}), 400
 
     # Call the function to fetch user data
     user_id = fetch_user_id(token)
@@ -27,7 +27,7 @@ def upload_file_route():
         return jsonify(response), status
     else:
         # If no user_id exists, return an error message
-        return jsonify({"error": "Session ended, Please login again"}), 401
+        return jsonify({"status": "error", "message": "Session ended, Please login again"}), 401
 
 
 @file_routes.route('/fetch', methods=['POST'])
@@ -57,7 +57,7 @@ def list_files_route():
     # user_id = request.args.get('user_id')
     token = request.headers.get('Authorization')
     if not token:
-        return jsonify({"error": "token is required"}), 400
+        return jsonify({"status": "error", "message": "token is required"}), 400
     user_id = fetch_user_id(token)
     response, status = list_user_files(user_id)
     return jsonify(response), status
@@ -69,7 +69,7 @@ def delete_file_route():
     # user_id = data.get('user_id')
     filename = data.get('filename')
     if not token or not filename:
-        return jsonify({"error": "User ID and filename are required"}), 400
+        return jsonify({"status": "error", "message": "User ID and filename are required"}), 400
     user_id = fetch_user_id(token)
     response, status = delete_user_file(user_id, filename)
     return jsonify(response), status
@@ -80,11 +80,11 @@ def rename_file_route():
     token = request.headers.get('Authorization')
 
     if not data or 'old_filename' not in data or 'new_filename' not in data:
-        return jsonify({"error": "Missing 'old_filename' or 'new_filename' in request body"}), 400
+        return jsonify({"status": "error", "message": "Missing 'old_filename' or 'new_filename' in request body"}), 400
 
     user_id = fetch_user_id(token)
     if not user_id:
-        return jsonify({"error": "Invalid or missing authorization token"}), 401
+        return jsonify({"status": "error", "message": "Invalid or missing authorization token"}), 401
 
     old_filename = data.get('old_filename')
     new_filename = data.get('new_filename')

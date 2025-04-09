@@ -19,14 +19,14 @@ def allowed_file(filename):
 def validate_upload(file, user_id):
     """Validates user ID and file before uploading."""
     if not user_id or not isinstance(user_id, str):
-        return {"error": "Valid User ID is required"}, 400
+        return {"status": "error", "message": "Valid User ID is required"}, 400
     if file.filename == '':
-        return {"error": "No file selected"}, 400
+        return {"status": "error", "message": "No file selected"}, 400
    
     if ' ' in file.filename:
-        return {"error": "File name should not contain spaces"}, 400
+        return {"status": "error", "message": "File name should not contain spaces"}, 400
     if not allowed_file(file.filename):
-        return {"error": "Only CSV & JSON files allowed"}, 400
+        return {"status": "error", "message": "Only CSV & JSON files allowed"}, 400
     return None
 
 
@@ -41,14 +41,14 @@ def fetch_user_id(token):
             if user_id:
                 return user_id
             else:
-                print("User ID not found in the response")
+                # print("User ID not found in the response")
                 return None
         else:
-            print(f"Failed to fetch data. Status code: {response.status_code}")
+            # print(f"Failed to fetch data. Status code: {response.status_code}")
             return None
 
     except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
+        # print(f"An error occurred: {e}")
         return None
     
 
@@ -68,6 +68,13 @@ def save_csv_to_disk(token, content, file_name):
 
         file_path = os.path.join(user_folder, f'{file_name}.csv')
 
+        if os.path.exists(file_path):
+            return "exists"
+    
+        if len(os.listdir(user_folder)) >= 10:
+            return "limit_exceeded"
+        
+    
         with open(file_path, 'wb') as f:
             f.write(content)
 
